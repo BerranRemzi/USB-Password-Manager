@@ -23,11 +23,11 @@
 #include "usb_device.h"
 #include "usbd_core.h"
 #include "usbd_desc.h"
-#include "usbd_cdc.h"
-#include "usbd_cdc_if.h"
+#include "usbd_hid.h"
 
 /* USER CODE BEGIN Includes */
-
+#include "usbd_cdc.h"
+#include "usbd_cdc_if.h"
 /* USER CODE END Includes */
 
 /* USER CODE BEGIN PV */
@@ -47,7 +47,7 @@ USBD_HandleTypeDef hUsbDeviceFS;
  * -- Insert your variables declaration here --
  */
 /* USER CODE BEGIN 0 */
-
+extern uint8_t USB_mode;
 /* USER CODE END 0 */
 
 /*
@@ -72,14 +72,20 @@ void MX_USB_DEVICE_Init(void)
   {
     Error_Handler();
   }
-  if (USBD_RegisterClass(&hUsbDeviceFS, &USBD_CDC) != USBD_OK)
-  {
-    Error_Handler();
-  }
-  if (USBD_CDC_RegisterInterface(&hUsbDeviceFS, &USBD_Interface_fops_FS) != USBD_OK)
-  {
-    Error_Handler();
-  }
+	if (0u == USB_mode) {
+		if (USBD_RegisterClass(&hUsbDeviceFS, &USBD_CDC) != USBD_OK) {
+			Error_Handler();
+		}
+		if (USBD_CDC_RegisterInterface(&hUsbDeviceFS, &USBD_Interface_fops_FS)
+				!= USBD_OK) {
+			Error_Handler();
+		}
+	} else {
+		if (USBD_RegisterClass(&hUsbDeviceFS, &USBD_HID) != USBD_OK) {
+			Error_Handler();
+		}
+	}
+
   if (USBD_Start(&hUsbDeviceFS) != USBD_OK)
   {
     Error_Handler();

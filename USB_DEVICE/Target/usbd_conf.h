@@ -71,8 +71,10 @@
 #define USBD_DEBUG_LEVEL     0
 /*---------- -----------*/
 #define USBD_SELF_POWERED     0
-/*---------- -----------*/
-#define MAX_STATIC_ALLOC_SIZE     512
+ /*---------- -----------*/
+ #define MAX_STATIC_ALLOC_SIZE     512
+ /*---------- -----------*/
+ #define HID_FS_BINTERVAL     0xA
 
 /****************************************/
 /* #define for FS and HS identification */

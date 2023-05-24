@@ -1,6 +1,8 @@
 #include "Password.h"
 
 #define PASSWORD_SIZE 16u
+volatile uint8_t USB_mode __attribute__ ((section (".noinit")));
+
 static char Password_buffer[PASSWORD_SIZE];
 
 uint32_t oat_hash(const char *s, uint8_t len);
