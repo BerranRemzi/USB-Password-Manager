@@ -1,6 +1,8 @@
 #include "Serial.h"
 #include <string.h>
 
+#define SERIAL
+#include "usbd_cdc_if.h"
 #include "../Keyboard/Keyboard.h"
 
 #define SERIAL_TX_BUFFER_SIZE 16
