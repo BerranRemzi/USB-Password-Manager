@@ -3,6 +3,7 @@
 #include "Button.h"
 #include "Serial.h"
 #include "Password.h"
+#include "main.h"
 
 #define PASSWORD_ENTER_TIMEOUT 500u
 
@@ -46,19 +47,24 @@ void Menu_Task(void) {
     switch (mode) {
     case MENU_INACTIVE:
         Password_Init();
-        if ((Button_StateGet() == BUTTON_STATE_LONG_PRESSED)
-                && (1u == button)) {
-            mode = MENU_REQUEST_PIN;
+        if (Button_StateGet() == BUTTON_STATE_LONG_PRESSED) {
+            if (1u == button) {
+                mode = MENU_REQUEST_PIN;
+            } else if (6u == button) {
+                Bootloader_Activate();
+            }
         }
         break;
+
     case MENU_REQUEST_PIN:
         Serial_print(pleaseEnterPin);
         mode = MENU_WAIT_FOR_PIN;
         break;
+
     case MENU_WAIT_FOR_PIN:
         if ((Button_StateGet() == BUTTON_STATE_PRESSED) && (button > 0u)) {
-            Serial_write((uint8_t)'0' + button);
-            Password_Put((uint8_t)'0' + button);
+            Serial_write((uint8_t) '0' + button);
+            Password_Put((uint8_t) '0' + button);
             if (Password_Check() > 0u) {
                 mode = MENU_PIN_CORRECT;
             }
@@ -68,11 +74,12 @@ void Menu_Task(void) {
             Serial_write(&read);
         }
         break;
+
     case MENU_PIN_CORRECT:
         Serial_print(pinCorrect);
         mode = MENU_INACTIVE;
-
         break;
+
     default:
         break;
     }
