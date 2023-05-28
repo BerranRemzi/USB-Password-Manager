@@ -4,6 +4,7 @@
 #include "Serial.h"
 #include "Password.h"
 #include "main.h"
+#include "SerialMenu.h"
 
 #define PASSWORD_ENTER_TIMEOUT 500u
 
@@ -83,4 +84,6 @@ void Menu_Task(void) {
     default:
         break;
     }
+    char input[64];
+    SerialMenu(input);
 }

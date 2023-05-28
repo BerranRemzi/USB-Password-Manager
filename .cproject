@@ -53,6 +53,7 @@
 									<listOptionValue builtIn="false" value="../user/lib/Button"/>
 									<listOptionValue builtIn="false" value="../user/lib/Menu"/>
 									<listOptionValue builtIn="false" value="../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc"/>
+									<listOptionValue builtIn="false" value="../user/lib/SerialMenu"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.1467653173" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>
@@ -181,6 +182,7 @@
 									<listOptionValue builtIn="false" value="../user/lib/Button"/>
 									<listOptionValue builtIn="false" value="../user/lib/Serial"/>
 									<listOptionValue builtIn="false" value="../user/lib/Menu"/>
+									<listOptionValue builtIn="false" value="../user/lib/SerialMenu"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.1372946405" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>
