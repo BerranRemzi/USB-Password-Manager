@@ -20,7 +20,7 @@ typedef struct {
 	Field_t password;
 } Slot_t;
 
-Slot_t slot[12] = {
+Slot_t slot[4] = {
     {
         "Test",
         {"url"},
@@ -30,24 +30,22 @@ Slot_t slot[12] = {
 };
 
 char input[64];
-char customText[32];
-uint8_t menu_size = 0;
-
 const SerialMenuEntry *pMenuEntry;
 
-extern const SerialMenuEntry menu_main[];
-extern const SerialMenuEntry menu_slot[];
-extern const SerialMenuEntry menu_slot_label_change[];
-extern const SerialMenuEntry menu_slot_field[];
-extern const SerialMenuEntry menu_slot_field_data_change[];
-extern const SerialMenuEntry menu_slot_field_delay_change[];
-extern const SerialMenuEntry menu_slot_field_action_change[];
+extern const SerialMenuEntry menu_main[] __attribute__((section(".rodata")));
+extern const SerialMenuEntry menu_slot[] __attribute__((section(".rodata")));
+extern const SerialMenuEntry menu_slot_label_change[] __attribute__((section(".rodata")));
+extern const SerialMenuEntry menu_slot_field[] __attribute__((section(".rodata")));
+extern const SerialMenuEntry menu_slot_field_data_change[] __attribute__((section(".rodata")));
+extern const SerialMenuEntry menu_slot_field_delay_change[] __attribute__((section(".rodata")));
+extern const SerialMenuEntry menu_slot_field_action_change[] __attribute__((section(".rodata")));
 
 Slot_t *pSlot;
 Field_t *pField;
 
-const SerialMenuEntry menu_main[] = {
+static const char * text_EnterNewValue = "Enter new value: ";
 
+const SerialMenuEntry menu_main[14] = {
     { "0", "Save", menu_main, []() { exit(0); } },
     { "1a", slot[0].label, menu_slot, []() { pSlot = &slot[0]; } },
     { "1b", slot[1].label, menu_slot, []() { pSlot = &slot[1]; } },
@@ -74,22 +72,22 @@ const SerialMenuEntry menu_slot_field[] = {
 };
 
 const SerialMenuEntry menu_slot_label_change[] = {
-    { "", "Enter new value: ", menu_slot, []() { memcpy(pSlot->label, input, sizeof(pSlot->label)); } },
+    { "", text_EnterNewValue, menu_slot, []() { memcpy(pSlot->label, input, sizeof(pSlot->label)); } },
     { NULL }
 };
 
 const SerialMenuEntry menu_slot_field_data_change[] = {
-    { "", "Enter new value: ", menu_slot_field, []() { memcpy(pField->data, input, sizeof(pField->data)); } },
+    { "", text_EnterNewValue, menu_slot_field, []() { memcpy(pField->data, input, sizeof(pField->data)); } },
     { NULL }
 };
 
 const SerialMenuEntry menu_slot_field_delay_change[] = {
-    { "Enter new value: ", "", menu_slot_field, []() { pField->delay = atoi(input); } },
+    { text_EnterNewValue, "", menu_slot_field, []() { pField->delay = atoi(input); } },
     { NULL }
 };
 
 const SerialMenuEntry menu_slot_field_action_change[] = {
-    {"", "Enter new value: ", menu_slot_field, []() { pField->action = input[0]; } },
+    {"", text_EnterNewValue, menu_slot_field, []() { pField->action = input[0]; } },
     { NULL }
 };
 
@@ -138,6 +136,6 @@ void main(void) {
         //memcpy(label[0], input, 16);
     }
 }
-#else{
+#else
 
 #endif

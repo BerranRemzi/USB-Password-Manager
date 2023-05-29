@@ -4,7 +4,7 @@
 #include "Serial.h"
 #include "Password.h"
 #include "main.h"
-#include "SerialMenu.h"
+#include "../SerialMenu/SerialMenu.h"
 
 #define PASSWORD_ENTER_TIMEOUT 500u
 
