@@ -16,18 +16,18 @@ volatile uint8_t _tx_buffer_tail = 0u;
 unsigned char _rx_buffer[SERIAL_RX_BUFFER_SIZE];
 unsigned char _tx_buffer[SERIAL_TX_BUFFER_SIZE];
 
-void Serial_Begin(void) {
+void Serial_begin(void) {
 }
 
-void Serial_End(void) {
+void Serial_end(void) {
 }
 
-int8_t Serial_Available(void) {
+int8_t Serial_available(void) {
     return ((unsigned int) (SERIAL_RX_BUFFER_SIZE + _rx_buffer_head
             - _rx_buffer_tail)) % SERIAL_RX_BUFFER_SIZE;
 }
 
-uint8_t Serial_Read(void) {
+uint8_t Serial_read(void) {
     // if the head isn't ahead of the tail, we don't have any characters
     if (_rx_buffer_head == _rx_buffer_tail) {
         return -1;
@@ -50,27 +50,33 @@ int8_t Serial_peek(void) {
 void Serial_flush(void) {
 }
 
-void Serial_print(uint8_t *data) {
+void Serial_print(const char *data) {
 #ifdef SERIAL
-    (void) CDC_Transmit_FS(data, strlen((char*) data));
+    while(CDC_Transmit_FS((uint8_t*) data, strlen((char*) data)) == USBD_BUSY);
 #else
     Keyboard_Print(data);
 #endif
 
 }
 
-void Serial_println(uint8_t *data) {
+void Serial_print_int(int value) {
+    char temp[8];
+    sprintf(temp, "%d", value);
+}
+
+void Serial_println(const char *data) {
+
 }
 
 void Serial_write(uint8_t data) {
 #ifdef SERIAL
-    (void) CDC_Transmit_FS(&data, 1u);
+    while(CDC_Transmit_FS(&data, 1u) == USBD_BUSY);
 #else
     Keyboard_Write(data);
 #endif
 }
 
-void Serial_Add(uint8_t c) {
+void Serial_add(uint8_t c) {
     // No Parity error, read byte and store it in the buffer if there is
     // room
     uint8_t i = (uint8_t) (_rx_buffer_head + 1u) % SERIAL_RX_BUFFER_SIZE;
@@ -85,3 +91,40 @@ void Serial_Add(uint8_t c) {
     }
 }
 
+bool Serial_isDataReady(char *data)
+{
+  bool returnValue = false;
+  static uint8_t position = 0u;
+  if (Serial_available() > 0)
+  {
+    data[position] = Serial_read();
+    Serial_write(data[position]);
+
+    switch (data[position])
+    {
+    case '\n':
+      data[position] = '\0';
+      position = 0u;
+      returnValue = true;
+      break;
+    case '\r':
+      data[position] = '\0';
+      break;
+    case '\b':
+      if (position > 0u)
+      {
+        position--;
+      }
+      break;
+    default:
+      position++;
+      if (position > 64)
+      {
+        position = 0u;
+      }
+      break;
+    }
+  }
+
+  return returnValue;
+}

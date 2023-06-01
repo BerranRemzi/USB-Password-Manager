@@ -4,7 +4,7 @@
 
 extern ADC_HandleTypeDef hadc;
 #define BUTTON_COUNT 6u
-#define BUTTON_PRESSSED_VALUE 75u
+#define BUTTON_PRESSSED_VALUE 100u
 #define BUTTON_DEBOUNCE 4u
 
 static uint8_t Button_raw[BUTTON_COUNT];
@@ -70,6 +70,8 @@ void HAL_ModeChange(ADC_HandleTypeDef *hadc, uint32_t mode, uint32_t pull) {
 void Button_Init(void) {
 
 }
+uint8_t bShortPressed = false;
+uint8_t prevPressedButton = false;
 
 void Button_Task(void) {
 
@@ -101,20 +103,24 @@ void Button_Task(void) {
     if (1u == pressedCount/* && debounceCounter == 4u*/) {
         pressedButton = map[firstPressed - 1u];
     } else {
-        pressedButton = 0u;
+        //pressedButton = 0u;
     }
 
     if ((prevButton == firstPressed) && (pressedButton > 0u)) {
         debounceCounter++;
     } else {
+        if (prevButton > 0u && debounceCounter < 100) {
+            bShortPressed = 1;
+        }
         debounceCounter = 0u;
     }
-
     prevButton = firstPressed;
 }
 
 uint8_t Button_Get(void) {
-    return pressedButton;
+    uint8_t returnValue = pressedButton;
+    pressedButton = 0;
+    return returnValue;
 }
 
 uint8_t Button_StateGet(void) {
@@ -125,6 +131,11 @@ uint8_t Button_StateGet(void) {
     } else if (100u == debounceCounter) {
         returnValue = BUTTON_STATE_LONG_PRESSED;
     }
+    if(bShortPressed){
+        bShortPressed = 0u;
+        returnValue = BUTTON_STATE_SHORT_PRESSED;
+    }
+
     return returnValue;
 }
 

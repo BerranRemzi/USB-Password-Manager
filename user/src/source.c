@@ -78,5 +78,5 @@ void loop(void) {
 
     HAL_GPIO_TogglePin(RED_LED_GPIO_Port, RED_LED_Pin);
     HAL_GPIO_TogglePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin);
-    HAL_Delay(10);
+    HAL_Delay(9);
 }

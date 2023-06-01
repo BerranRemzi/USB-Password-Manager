@@ -260,7 +260,7 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
 {
   /* USER CODE BEGIN 6 */
     for (uint32_t i = 0u; i < Len[0]; i++) {
-        Serial_Add(Buf[i]);
+        Serial_add(Buf[i]);
     }
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);

@@ -89,6 +89,7 @@ int main(void)
   MX_USB_DEVICE_Init();
   MX_ADC_Init();
   /* USER CODE BEGIN 2 */
+  HAL_Delay(100);
   setup();
   /* USER CODE END 2 */
 
@@ -149,10 +150,6 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-
-  /** Enables the Clock Security System
-  */
-  HAL_RCC_EnableCSS();
 }
 
 /**

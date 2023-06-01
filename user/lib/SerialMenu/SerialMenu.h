@@ -4,11 +4,11 @@
 #include "stdint.h"
 
 typedef struct {
-	const char *key;
-	const char *caption;
-	const void *pSerialMenuEntry;
-	void (*runWhenSelected)(void);
-	void (*runAlways)(void);
+    const char *key;
+    const char *caption;
+    const void *pSerialMenuEntry;
+    void (*runWhenSelected)(void);
+    void (*runAlways)(void);
 } SerialMenuEntry;
 
 #ifdef __cplusplus
