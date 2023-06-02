@@ -63,7 +63,7 @@ void Menu_Task(void) {
         break;
 
     case MENU_WAIT_FOR_PIN:
-        if ((Button_StateGet() == BUTTON_STATE_PRESSED) && (button > 0u)) {
+        if ((Button_StateGet() == BUTTON_STATE_SHORT_PRESS) && (button > 0u)) {
             timeout = PASSWORD_ENTER_TIMEOUT;
             Serial_write((uint8_t) '0' + button);
             Password_Put((uint8_t) '0' + button);
@@ -78,12 +78,13 @@ void Menu_Task(void) {
         timeout = DEVICE_LOCK_TIMEOUT;
         mode = MENU_PIN_CORRECT;
         break;
+
     case MENU_PIN_CORRECT:
         if (button > 0u) {
             timeout = PASSWORD_ENTER_TIMEOUT;
-            if (Button_StateGet() == BUTTON_STATE_SHORT_PRESSED) {
+            if (Button_StateGet() == BUTTON_STATE_SHORT_CLICK) {
                 Serial_print("Short\n");
-            } else if (Button_StateGet() == BUTTON_STATE_LONG_PRESSED) {
+            } else if (Button_StateGet() == BUTTON_STATE_LONG_CLICK) {
                 Serial_print("Long\n");
             }
         }

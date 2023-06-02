@@ -3,14 +3,21 @@
 #include <stdbool.h>
 
 extern ADC_HandleTypeDef hadc;
+
 #define BUTTON_COUNT 6u
-#define BUTTON_PRESSSED_VALUE 100u
+#define BUTTON_ADC_HYSTERESIS 100u
 #define BUTTON_DEBOUNCE 4u
+#define LONG_PRESS_DEBOUNCE 100u
 
 static uint8_t Button_raw[BUTTON_COUNT];
-static uint8_t pressedButton = 0u;
+static uint8_t currentButton = 0u;
 static uint8_t prevButton = 0u;
+static uint8_t computedButton = 0u;
 static uint8_t debounceCounter = 0u;
+static uint8_t prevDebounceCounter = 0u;
+uint8_t prevPressedButton = false;
+
+Button_Transition_t transition = BUTTON_NO_TRANSITION;
 
 void ADC_Select_Channel(uint32_t ch) {
     ADC_ChannelConfTypeDef conf = {
@@ -64,14 +71,11 @@ void HAL_ModeChange(ADC_HandleTypeDef *hadc, uint32_t mode, uint32_t pull) {
 
         /* USER CODE END ADC1_MspInit 1 */
     }
-
 }
 
 void Button_Init(void) {
 
 }
-uint8_t bShortPressed = false;
-uint8_t prevPressedButton = false;
 
 void Button_Task(void) {
 
@@ -89,54 +93,75 @@ void Button_Task(void) {
     HAL_Delay(1);
 
     Adc_ReadAllChannels(Button_raw);
-    uint8_t pressedCount = 0u;
-    uint8_t firstPressed = 0u;
+    uint8_t pressedButtonCount = 0u;
+    uint8_t firstPressedRaw = 0u;
     for (uint8_t i = 0; i < BUTTON_COUNT; i++) {
-        if (Button_raw[i] < BUTTON_PRESSSED_VALUE) {
-            pressedCount++;
-            if (0u == firstPressed) {
-                firstPressed = i + 1u;
+        if (Button_raw[i] < BUTTON_ADC_HYSTERESIS) {
+            pressedButtonCount++;
+            if (0u == firstPressedRaw) {
+                firstPressedRaw = i + 1u;
             }
         }
     }
 
-    if (1u == pressedCount/* && debounceCounter == 4u*/) {
-        pressedButton = map[firstPressed - 1u];
-    } else {
-        //pressedButton = 0u;
+    if (1u == pressedButtonCount) {
+        currentButton = map[firstPressedRaw - 1u];
+    }
+    else {
+        currentButton = 0u;
     }
 
-    if ((prevButton == firstPressed) && (pressedButton > 0u)) {
-        debounceCounter++;
-    } else {
-        if (prevButton > 0u && debounceCounter < 100) {
-            bShortPressed = 1;
+    if ((debounceCounter == 0u) || (debounceCounter > BUTTON_DEBOUNCE)) {
+        prevDebounceCounter = debounceCounter;
+    }
+
+    if ((prevButton == currentButton)) {
+        if (debounceCounter < 255u) {
+            debounceCounter++;
         }
+    }
+    else {
         debounceCounter = 0u;
     }
-    prevButton = firstPressed;
+
+    if ((prevButton > 0u) && (currentButton == 0u)) {
+        transition = BUTTON_RELEASED;
+        computedButton = prevButton;
+    }
+    else if ((prevButton == 0u) && (currentButton > 0u)) {
+        transition = BUTTON_PRESSED;
+        computedButton = currentButton;
+    }
+    else {
+        transition = BUTTON_NO_TRANSITION;
+        computedButton = currentButton;
+    }
+
+    prevButton = currentButton;
 }
 
 uint8_t Button_Get(void) {
-    uint8_t returnValue = pressedButton;
-    pressedButton = 0;
-    return returnValue;
+    return computedButton;
 }
 
-uint8_t Button_StateGet(void) {
-    Button_t returnValue = BUTTON_STATE_NOT_PRESSED;
-
-    if (4u == debounceCounter) {
-        returnValue = BUTTON_STATE_PRESSED;
-    } else if (100u == debounceCounter) {
-        returnValue = BUTTON_STATE_LONG_PRESSED;
-    }
-    if(bShortPressed){
-        bShortPressed = 0u;
-        returnValue = BUTTON_STATE_SHORT_PRESSED;
+Button_State_t Button_StateGet(void) {
+    Button_State_t returnValue = BUTTON_STATE_NOT_PRESSED;
+    if (transition == BUTTON_RELEASED)
+    { 
+        if ((prevDebounceCounter > BUTTON_DEBOUNCE) && (prevDebounceCounter < LONG_PRESS_DEBOUNCE)) {
+            returnValue = BUTTON_STATE_SHORT_CLICK;
+        }
+        else if (prevDebounceCounter > LONG_PRESS_DEBOUNCE) {
+            returnValue = BUTTON_STATE_LONG_CLICK;
+        }
+    } else if (debounceCounter == BUTTON_DEBOUNCE) {
+        returnValue = BUTTON_STATE_SHORT_PRESS;
     }
 
     return returnValue;
+}
+Button_Transition_t Button_GetTransition() {
+    return transition;
 }
 
 uint8_t* Button_GetRawValues(void) {

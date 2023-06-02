@@ -100,7 +100,12 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  loop();
+        static uint32_t prevTick = 0u;
+        uint32_t currentTick = HAL_GetTick();
+        if ((uint32_t)(currentTick - prevTick) > 10u) {
+            loop();
+            prevTick = currentTick;
+        }
   }
   /* USER CODE END 3 */
 }
