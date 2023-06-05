@@ -7,20 +7,11 @@
 #include <string.h>
 #include "SerialMenu.h"
 #include "Serial.h"
+#include "main.h"
+#include "Eeprom.h"
 
-typedef struct {
-	char data[56];
-	uint8_t delay;
-	uint8_t action;
-} Field_t;
 
-typedef struct {
-	char label[16];
-	Field_t url;
-	Field_t userName;
-	Field_t password;
-} Slot_t;
-
+#if 0
 Slot_t slot[4] = {
     {
         "Test",
@@ -29,9 +20,9 @@ Slot_t slot[4] = {
         {"password"}
     }
 };
+#endif
 
-char * input;
-
+char* input;
 
 extern const SerialMenuEntry menu_main[]; //__attribute__((section(".rodata")));
 extern const SerialMenuEntry menu_slot[]; //__attribute__((section(".rodata")));
@@ -41,18 +32,29 @@ extern const SerialMenuEntry menu_slot_field_data_change[]; //__attribute__((sec
 extern const SerialMenuEntry menu_slot_field_delay_change[]; //__attribute__((section(".rodata")));
 extern const SerialMenuEntry menu_slot_field_action_change[]; //__attribute__((section(".rodata")));
 
-const SerialMenuEntry *pMenuEntry = menu_main;
-Slot_t *pSlot = NULL;
-Field_t *pField;
+const SerialMenuEntry* pMenuEntry = menu_main;
+Slot_t* pSlot = NULL;
+Field_t* pField = NULL;
 
-static const char * text_EnterNewValue = "Enter new value: ";
+static const char* text_EnterNewValue = "Enter new value: ";
+//static const char* text_Empty = "Empty";
+
+//char pLabel[12][16];
 
 const SerialMenuEntry menu_main[] = {
-    { "0", "Save", menu_main, []() {  } },
-    { "1a", slot[0].label, menu_slot, []() { pSlot = &slot[0]; } },
-    { "1b", slot[1].label, menu_slot, []() { pSlot = &slot[1]; } },
-    { "2a", slot[2].label, menu_slot, []() { pSlot = &slot[2]; } },
-    { "2b", slot[3].label, menu_slot, []() { pSlot = &slot[3]; } },
+    { "0", "Save", menu_main, []() { Eeprom_Save(); } },
+    { "1a", label[0], menu_slot,  []() { pSlot = (Slot_t*)Eeprom_GetDataPtr(0); } },
+    { "1b", label[1], menu_slot,  []() { pSlot = (Slot_t*)Eeprom_GetDataPtr(1); } },
+    { "2a", label[2], menu_slot,  []() { pSlot = (Slot_t*)Eeprom_GetDataPtr(2); } },
+    { "2b", label[3], menu_slot,  []() { pSlot = (Slot_t*)Eeprom_GetDataPtr(3); } },
+    { "3a", label[4], menu_slot,  []() { pSlot = (Slot_t*)Eeprom_GetDataPtr(4); } },
+    { "3b", label[5], menu_slot,  []() { pSlot = (Slot_t*)Eeprom_GetDataPtr(5); } },
+    { "4a", label[6], menu_slot,  []() { pSlot = (Slot_t*)Eeprom_GetDataPtr(6); } },
+    { "4b", label[7], menu_slot,  []() { pSlot = (Slot_t*)Eeprom_GetDataPtr(7); } },
+    { "5a", label[8], menu_slot,  []() { pSlot = (Slot_t*)Eeprom_GetDataPtr(8); } },
+    { "5b", label[9], menu_slot,  []() { pSlot = (Slot_t*)Eeprom_GetDataPtr(9); } },
+    { "6a", label[10], menu_slot, []() { pSlot = (Slot_t*)Eeprom_GetDataPtr(10); } },
+    { "6b", label[11], menu_slot, []() { pSlot = (Slot_t*)Eeprom_GetDataPtr(11); } },
     { NULL },
 };
 
@@ -93,7 +95,7 @@ const SerialMenuEntry menu_slot_field_action_change[] = {
     { NULL }
 };
 
-void SerialMenu(char *serialinput) {
+void SerialMenu(char* serialinput) {
     input = serialinput;
     char buffer[64];
     // compare input string
@@ -102,7 +104,7 @@ void SerialMenu(char *serialinput) {
         if ('\0' == pMenuEntry[i].key[0] || 0 == strcmp(pMenuEntry[i].key, serialinput))
         {
             pMenuEntry[i].runWhenSelected();
-            pMenuEntry = (SerialMenuEntry *)pMenuEntry[i].pSerialMenuEntry;
+            pMenuEntry = (SerialMenuEntry*)pMenuEntry[i].pSerialMenuEntry;
             break;
         }
     }
@@ -128,29 +130,24 @@ void SerialMenu(char *serialinput) {
             Serial_print("\n");
         }
     }
-    if (pMenuEntry->key[0] != '\0')
+    if (pMenuEntry->key[0] != NULL)
     {
         Serial_print("Enter your choice: ");
     }
 }
 
-#if 0
-void main(void) {
-    pMenuEntry = menu_main;
+#if 1
+int main(void) {
 
+    pMenuEntry = menu_main;
+    char input[64];
+    SerialMenu(input);
     while (1) {
         SerialMenu(input);
-
-        if (pMenuEntry->key[0] != '\0') {
-            printf("Enter your choice: ");
-        }
-        else {
-            printf("%s", customText);
-            customText[0] = '\0';
-        }
         scanf("%56s", input);
         //memcpy(label[0], input, 16);
     }
+    return 0;
 }
 #else
 
