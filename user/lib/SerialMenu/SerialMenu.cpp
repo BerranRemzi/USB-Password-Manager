@@ -7,9 +7,8 @@
 #include <string.h>
 #include "SerialMenu.h"
 #include "Serial.h"
-#include "main.h"
+//#include "main.h"
 #include "Eeprom.h"
-
 
 #if 0
 Slot_t slot[4] = {
@@ -42,7 +41,7 @@ static const char* text_EnterNewValue = "Enter new value: ";
 //char pLabel[12][16];
 
 const SerialMenuEntry menu_main[] = {
-    { "0", "Save", menu_main, []() { Eeprom_Save(); } },
+    { "0", "Save", menu_main, []() { Eeprom_WriteChanged(); } },
     { "1a", label[0], menu_slot,  []() { pSlot = (Slot_t*)Eeprom_GetDataPtr(0); } },
     { "1b", label[1], menu_slot,  []() { pSlot = (Slot_t*)Eeprom_GetDataPtr(1); } },
     { "2a", label[2], menu_slot,  []() { pSlot = (Slot_t*)Eeprom_GetDataPtr(2); } },
@@ -136,7 +135,7 @@ void SerialMenu(char* serialinput) {
     }
 }
 
-#if 1
+#if 0
 int main(void) {
 
     pMenuEntry = menu_main;

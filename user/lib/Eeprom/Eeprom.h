@@ -15,7 +15,20 @@ typedef struct {
 	Field_t password;
 } Slot_t;
 
-Slot_t* Eeprom_GetDataPtr(uint8_t index);
-void Eeprom_Save();
 extern const char* label[12];
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+Slot_t* Eeprom_GetDataPtr(uint8_t index);
+void Eeprom_WriteChanged();
+void Eeprom_ReadPage(uint8_t block);
+void Eeprom_ErasePage(uint8_t block);
+void Eeprom_WritePage(uint8_t block);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif /* EEPROM_H */

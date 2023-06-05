@@ -7,15 +7,15 @@ extern ADC_HandleTypeDef hadc;
 #define BUTTON_COUNT 6u
 #define BUTTON_ADC_HYSTERESIS 100u
 #define BUTTON_DEBOUNCE 4u
-#define LONG_PRESS_DEBOUNCE 100u
+#define LONG_CLICK_DEBOUNCE 100u
+#define LONG_PRESS_DEBOUNCE 500u
 
 static uint8_t Button_raw[BUTTON_COUNT];
 static uint8_t currentButton = 0u;
 static uint8_t prevButton = 0u;
 static uint8_t computedButton = 0u;
-static uint8_t debounceCounter = 0u;
-static uint8_t prevDebounceCounter = 0u;
-uint8_t prevPressedButton = false;
+static uint16_t debounceCounter = 0u;
+static uint16_t prevDebounceCounter = 0u;
 
 Button_Transition_t transition = BUTTON_NO_TRANSITION;
 
@@ -74,7 +74,7 @@ void HAL_ModeChange(ADC_HandleTypeDef *hadc, uint32_t mode, uint32_t pull) {
 }
 
 void Button_Init(void) {
-
+    debounceCounter = 0u;
 }
 
 void Button_Task(void) {
@@ -116,7 +116,7 @@ void Button_Task(void) {
     }
 
     if ((prevButton == currentButton)) {
-        if (debounceCounter < 255u) {
+        if (debounceCounter <= LONG_PRESS_DEBOUNCE) {
             debounceCounter++;
         }
     }
@@ -148,14 +148,16 @@ Button_State_t Button_StateGet(void) {
     Button_State_t returnValue = BUTTON_STATE_NOT_PRESSED;
     if (transition == BUTTON_RELEASED)
     { 
-        if ((prevDebounceCounter > BUTTON_DEBOUNCE) && (prevDebounceCounter < LONG_PRESS_DEBOUNCE)) {
+        if ((prevDebounceCounter > BUTTON_DEBOUNCE) && (prevDebounceCounter < LONG_CLICK_DEBOUNCE)) {
             returnValue = BUTTON_STATE_SHORT_CLICK;
         }
-        else if (prevDebounceCounter > LONG_PRESS_DEBOUNCE) {
+        else if (prevDebounceCounter > LONG_CLICK_DEBOUNCE) {
             returnValue = BUTTON_STATE_LONG_CLICK;
         }
     } else if (debounceCounter == BUTTON_DEBOUNCE) {
         returnValue = BUTTON_STATE_SHORT_PRESS;
+    } else if(debounceCounter == LONG_PRESS_DEBOUNCE) {
+        returnValue = BUTTON_STATE_LONG_PRESS;
     }
 
     return returnValue;
