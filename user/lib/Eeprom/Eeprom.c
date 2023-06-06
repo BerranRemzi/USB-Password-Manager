@@ -3,14 +3,14 @@
 #include "stm32f0xx_hal.h"
 
 #define ADDR_FLASH_PAGE_00    (0x08000000u) /* Base @ of Page 00, 1 Kbytes */
-#define ADDR_FLASH_PAGE_29    ((uint32_t*)0x08007400u) /* Base @ of Page 00, 1 Kbytes */
-#define ADDR_FLASH_PAGE_30    ((uint32_t*)0x08007800u) /* Base @ of Page 00, 1 Kbytes */
-#define ADDR_FLASH_PAGE_31    ((uint32_t*)0x08007C00u) /* Base @ of Page 31, 1 Kbytes */
+#define ADDR_FLASH_PAGE_29    (0x08007400u) /* Base @ of Page 00, 1 Kbytes */
+#define ADDR_FLASH_PAGE_30    (0x08007800u) /* Base @ of Page 00, 1 Kbytes */
+#define ADDR_FLASH_PAGE_31    (0x08007C00u) /* Base @ of Page 31, 1 Kbytes */
 
-const uint32_t * const eeprom[3] = {
-    ADDR_FLASH_PAGE_29,
-    ADDR_FLASH_PAGE_30,
-    ADDR_FLASH_PAGE_31
+const uint8_t *const eeprom[3] = {
+        (const uint8_t*) ADDR_FLASH_PAGE_29,
+        (const uint8_t*) ADDR_FLASH_PAGE_30,
+        (const uint8_t*) ADDR_FLASH_PAGE_31
 };
 
 uint8_t ram[FLASH_PAGE_SIZE];
@@ -53,24 +53,37 @@ Slot_t* Eeprom_GetDataPtr(uint8_t index) {
     return (Slot_t*)&ram[address];
 }
 
-void Eeprom_WritePage(uint8_t block) {
+void Eeprom_WritePage(uint8_t page) {
 #if 0
-    (void)memcpy((uint8_t*)&eeprom[block], (uint8_t*)ram, sizeof(ram));
+    (void)memcpy((uint8_t*)&eeprom[page], (uint8_t*)ram, sizeof(ram));
 #else
+    __disable_irq();
+    Eeprom_ErasePage(page);
+
     (void) HAL_FLASH_Unlock();
     for (uint32_t i = 0; i < FLASH_PAGE_SIZE; i += 4u) {
-        (void) HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t) eeprom[block][i], (uint32_t)ram[i]);
+        (void) HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)(eeprom[page]+i), *((uint32_t*)(ram+i)));
     }
     (void) HAL_FLASH_Lock();
+    __enable_irq();
 #endif
 }
 
-void Eeprom_ReadPage(uint8_t block) {
-    (void)memcpy((uint8_t*)ram, (uint8_t*)eeprom[block], sizeof(ram));
+void Eeprom_ReadPage(uint8_t page) {
+    (void)memcpy((uint8_t*)ram, (uint8_t*)eeprom[page], sizeof(ram));
 }
 
-void Eeprom_ErasePage(uint8_t block) {
-
+void Eeprom_ErasePage(uint8_t page) {
+    (void) HAL_FLASH_Unlock();
+    FLASH_EraseInitTypeDef eraseInitTypeDef =
+    {
+         .TypeErase = FLASH_TYPEERASE_PAGES,
+         .PageAddress = (uint32_t)eeprom[page],
+         .NbPages = 1
+    };
+    uint32_t pageError;
+    HAL_FLASHEx_Erase(&eraseInitTypeDef, &pageError);
+    (void) HAL_FLASH_Lock();
 }
 
 void Eeprom_WriteChanged() {

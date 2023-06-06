@@ -22,6 +22,7 @@ Slot_t slot[4] = {
 #endif
 
 char* input;
+char buffer[64];
 
 extern const SerialMenuEntry menu_main[]; //__attribute__((section(".rodata")));
 extern const SerialMenuEntry menu_slot[]; //__attribute__((section(".rodata")));
@@ -69,7 +70,7 @@ const SerialMenuEntry menu_slot[] = {
 const SerialMenuEntry menu_slot_field[] = {
     { "0", "Back    ", menu_slot, []() {} },
     { "1", "Data    ", menu_slot_field_data_change, []() {}, []() { Serial_print(pField->data); } },
-    { "2", "Delay   ", menu_slot_field_delay_change, []() {}, []() { Serial_print_int(pField->delay); } },
+    { "2", "Delay   ", menu_slot_field_delay_change, []() {}, []() { Serial_write(pField->delay); } },
     { "3", "Action  ", menu_slot_field_action_change, []() {}, []() { Serial_write(pField->action); } },
     { NULL },
 };
@@ -85,7 +86,7 @@ const SerialMenuEntry menu_slot_field_data_change[] = {
 };
 
 const SerialMenuEntry menu_slot_field_delay_change[] = {
-    { text_EnterNewValue, "", menu_slot_field, []() { pField->delay = atoi(input); } },
+    { "", text_EnterNewValue, menu_slot_field, []() { pField->delay = input[0]; } },
     { NULL }
 };
 
@@ -96,7 +97,7 @@ const SerialMenuEntry menu_slot_field_action_change[] = {
 
 void SerialMenu(char* serialinput) {
     input = serialinput;
-    char buffer[64];
+
     // compare input string
     for (int i = 0; NULL != pMenuEntry[i].key; i++)
     {
@@ -115,9 +116,10 @@ void SerialMenu(char* serialinput) {
         {
             sprintf(buffer, "%s", pMenuEntry[i].caption);
         }
-        else
-        {
-            sprintf(buffer, "%4s - %s", pMenuEntry[i].key, pMenuEntry[i].caption);
+        else if((pMenuEntry[i].caption[0] == 0) || (pMenuEntry[i].caption[0] == 255)) {
+            sprintf(buffer, "%4s - Empty", pMenuEntry[i].key);
+        } else {
+            sprintf(buffer, "%4s - %.16s", pMenuEntry[i].key, pMenuEntry[i].caption);
         }
         Serial_print(buffer);
         if (NULL != pMenuEntry[i].runAlways)
@@ -129,7 +131,7 @@ void SerialMenu(char* serialinput) {
             Serial_print("\n");
         }
     }
-    if (pMenuEntry->key[0] != NULL)
+    if (pMenuEntry->key != NULL && pMenuEntry->key[0] != '\0')
     {
         Serial_print("Enter your choice: ");
     }

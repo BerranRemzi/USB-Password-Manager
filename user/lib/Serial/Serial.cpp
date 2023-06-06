@@ -52,7 +52,9 @@ void Serial_flush(void) {
 
 void Serial_print(const char *data) {
 #ifdef SERIAL
-    while(CDC_Transmit_FS((uint8_t*) data, strlen((char*) data)) == USBD_BUSY);
+    if(data[0] != 255 && data[0] != 0) {
+        while(CDC_Transmit_FS((uint8_t*) data, strlen((char*) data)) == USBD_BUSY);
+    }
 #else
     Keyboard_Print(data);
 #endif

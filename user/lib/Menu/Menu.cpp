@@ -26,10 +26,10 @@ typedef enum {
 static Menu_Mode_t mode = MENU_REQUEST_PIN_TEXT;
 uint32_t timeout = 0;
 uint32_t menuDelay = 0u;
-char buffer[64] = {'\n'};
+char Menu_buffer[128] = {'\0'};
 
 void Menu_Init(void) {
-    SerialMenu(buffer);
+    SerialMenu(Menu_buffer);
 }
 
 extern unsigned char _rx_buffer[16];
@@ -116,8 +116,8 @@ void Menu_Task(void) {
         break;
     }
 
-    if (Serial_isDataReady(buffer) == true)
+    if (Serial_isDataReady(Menu_buffer) == true)
     {
-      SerialMenu(buffer);
+      SerialMenu(Menu_buffer);
     }
 }
